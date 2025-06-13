@@ -1,0 +1,166 @@
+<h3>Soal 7 - Hashing</h3>
+
+<p><strong>Tanggal hari ini:</strong> <span id="tanggalHariIni"></span></p>
+
+<div class="mb-3">
+  <label for="nameInput" class="form-label">Nama Depan Anda:</label>
+  <input type="text" id="nameInput" class="form-control" placeholder="Contoh: john">
+</div>
+
+<button onclick="generateHash()" class="btn btn-primary mb-3">Generate Hash</button>
+
+<div>
+  <strong>Hasil Hash:</strong>
+  <p id="hashResult" class="mt-2 text-break"></p>
+</div>
+
+<script>
+  function tampilkanTanggalHariIni() {
+    const today = new Date();
+    const hari = today.getDate();
+    const bulanIndex = today.getMonth();
+    const tahun = today.getFullYear();
+    const bulanNama = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    const formatIndonesia = `${hari} ${bulanNama[bulanIndex]} ${tahun}`;
+    document.getElementById("tanggalHariIni").innerText = formatIndonesia;
+  }
+
+  function sha256(message) {
+  // ROTR adalah fungsi untuk rotasi bit ke kanan sesuai dengan jumlah n
+  const ROTR = (x, n) => (x >>> n) | (x << (32 - n));
+  // MAX_UINT32 adalah nilai maksimum untuk bilangan 32-bit unsigned integer
+  // yaitu 2^32
+  const MAX_UINT32 = 2 ** 32;
+
+  const isPrime = n => {
+    for (let i = 2, sqrt = Math.sqrt(n); i <= sqrt; i++) {
+      if (n % i === 0) return false;
+    }
+    return true;
+  };
+
+  const fracToUint32 = n => ((n - Math.floor(n)) * MAX_UINT32) | 0;
+  // Inisialisasi H dan K
+  // H adalah 8 bilangan prima pertama
+  // K adalah 64 konstanta pembulat, dari akar kubik angka prima.
+  const H = [], K = [];
+  for (let i = 2, primesFound = 0; primesFound < 64; i++) {
+    if (isPrime(i)) {
+      //jika kurang dari 8, gunakan akar kuadrat
+      if (primesFound < 8) H.push(fracToUint32(Math.sqrt(i)));
+      //setelahnya, gunakan akar kubik
+      K.push(fracToUint32(Math.cbrt(i)));
+      console.log(`hash: ${i}, H: ${H}, K: ${K}`);
+      primesFound++;
+    }
+  }
+
+  // Konversi pesan ke array byte
+  const msgBytes = [];
+  // Pastikan pesan hanya berisi karakter ASCII
+  for (let i = 0; i < message.length; i++) {
+    const code = message.charCodeAt(i);
+    if (code > 255) throw new Error("Only ASCII supported");
+    msgBytes.push(code);
+  }
+  // Tambahkan padding sesuai dengan spesifikasi SHA-256
+  // Tambahkan bit '1' di akhir pesan
+  msgBytes.push(0x80);
+  // Tambahkan nol hingga panjang pesan menjadi 448 bit (56 byte)
+  while ((msgBytes.length % 64) !== 56) msgBytes.push(0x00);
+
+  // hitung panjang pesan dalam bit
+  const bitLen = message.length * 8;
+  // Untuk bagian atas jika panjang pesan lebih dari 2^32 bit
+  const lenHi = Math.floor(bitLen / MAX_UINT32);
+  // ubah jadi unsigned 32-bit integer 
+  const lenLo = bitLen >>> 0;
+  //ubah panjang pesan ke dalam 8 bit
+  for (let i = 3; i >= 0; i--) msgBytes.push((lenHi >>> (i * 8)) & 0xff);
+  for (let i = 3; i >= 0; i--) msgBytes.push((lenLo >>> (i * 8)) & 0xff);
+  console.log(`msgBytes : ${msgBytes}`);
+  console.log(`msgBytes length : ${msgBytes.length}`);
+  //buat array 32-bit sebanyak 1 elemen untuk setiap 4 byte pesan
+  const words = new Uint32Array(msgBytes.length / 4);
+  console.log(`words : ${words}`);
+  
+  for (let i = 0; i < words.length; i++) {
+    words[i] =
+      (msgBytes[i * 4] << 24) |
+      (msgBytes[i * 4 + 1] << 16) |
+      (msgBytes[i * 4 + 2] << 8) |
+      (msgBytes[i * 4 + 3]);
+  }
+
+  const w = new Uint32Array(64);
+  const hash = H.slice();
+
+  for (let i = 0; i < words.length; i += 16) {
+    for (let t = 0; t < 16; t++) w[t] = words[i + t];
+    for (let t = 16; t < 64; t++) {
+      const s0 = ROTR(w[t - 15], 7) ^ ROTR(w[t - 15], 18) ^ (w[t - 15] >>> 3);
+      const s1 = ROTR(w[t - 2], 17) ^ ROTR(w[t - 2], 19) ^ (w[t - 2] >>> 10);
+      w[t] = (w[t - 16] + s0 + w[t - 7] + s1) >>> 0;
+    }
+
+    let [a, b, c, d, e, f, g, h] = hash;
+
+    for (let t = 0; t < 64; t++) {
+      const S1 = ROTR(e, 6) ^ ROTR(e, 11) ^ ROTR(e, 25);
+      const ch = (e & f) ^ (~e & g);
+      const temp1 = (h + S1 + ch + K[t] + w[t]) >>> 0;
+      const S0 = ROTR(a, 2) ^ ROTR(a, 13) ^ ROTR(a, 22);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (S0 + maj) >>> 0;
+
+      [a, b, c, d, e, f, g, h] = [
+        (temp1 + temp2) >>> 0,
+        a, b, c,
+        (d + temp1) >>> 0,
+        e, f, g
+      ];
+    }
+
+    hash[0] = (hash[0] + a) >>> 0;
+    hash[1] = (hash[1] + b) >>> 0;
+    hash[2] = (hash[2] + c) >>> 0;
+    hash[3] = (hash[3] + d) >>> 0;
+    hash[4] = (hash[4] + e) >>> 0;
+    hash[5] = (hash[5] + f) >>> 0;
+    hash[6] = (hash[6] + g) >>> 0;
+    hash[7] = (hash[7] + h) >>> 0;
+  }
+
+  return hash.map(x => x.toString(16).padStart(8, '0')).join('');
+}
+
+
+
+  async function generateHash() {
+    const name = document.getElementById("nameInput").value.trim().toLowerCase();
+    if (!name) {
+      alert("Silakan masukkan nama depan Anda.");
+      return;
+    }
+
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+
+    const inputString = `${dd}${mm}${yyyy}${name}priaifabula`;
+    const buffer = new TextEncoder().encode(inputString);
+    const digest = await crypto.subtle.digest("SHA-256", buffer);
+    const hashArray = Array.from(new Uint8Array(digest));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const hash = sha256(inputString);
+    console.log("Hashwithfunction:", hash);
+    console.log("Hash:", hashHex);
+    document.getElementById("hashResult").innerText = hashHex;
+  }
+  
+  tampilkanTanggalHariIni();
+</script>

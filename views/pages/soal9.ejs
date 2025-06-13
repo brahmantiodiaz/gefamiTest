@@ -1,0 +1,36 @@
+<h3>Soal 9 - Login</h3>
+
+<div id="loginSection">
+  <input id="username" class="form-control mb-2" placeholder="Username">
+  <input id="password" type="password" class="form-control mb-2" placeholder="Password">
+  <button onclick="login()" class="btn btn-primary">Login</button>
+</div>
+
+<div id="welcomeSection" style="display:none;">
+  <label id="welcomeLabel"></label><br>
+  <button onclick="logout()" class="btn btn-danger">Logout</button>
+</div>
+
+<script>
+  function login() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    localStorage.setItem('username', user);
+    localStorage.setItem('password', pass);
+    window.location.reload();
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.reload(); 
+  }
+
+  window.onload = () => {
+    const user = localStorage.getItem('username');
+    if (user) {
+      document.getElementById('welcomeLabel').innerText = `Selamat datang, ${user}`;
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('welcomeSection').style.display = 'block';
+    }
+  }
+</script>

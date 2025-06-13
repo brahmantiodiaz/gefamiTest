@@ -1,0 +1,108 @@
+<h1>🔧 Test API Express</h1>
+
+  <div class="instructions">
+    <h3>🔗 URL API</h3>
+    <ul>
+      <li><strong>GET</strong>: <code>http://localhost:3000/api/data</code></li>
+      <li><strong>POST</strong>: <code>http://localhost:3000/api/submit</code></li>
+    </ul>
+
+    <h3>📬 Cara Test di Postman</h3>
+    <ol>
+      <li>Buka Postman.</li>
+      <li>Pilih <strong>GET</strong> atau <strong>POST</strong>.</li>
+      <li>Masukkan URL.</li>
+      <li>Di tab <strong>Headers</strong> isi:
+        <ul>
+          <li><code>User-id</code>: <strong>ifabula</strong></li>
+          <li><code>Scope</code>: <strong>user</strong></li>
+        </ul>
+      </li>
+      <li>Untuk <strong>POST</strong>, di tab <strong>Body → raw → JSON</strong> isi:
+<pre>{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "age": 30
+}</pre>
+      </li>
+      <li>Klik <strong>Send</strong> untuk melihat response.</li>
+    </ol>
+  </div>
+
+  <form id="postForm">
+    <h3>📝 POST /api/submit</h3>
+    <label>User-id: <input type="text" name="userId" value="ifabula" required></label>
+    <label>Scope: <input type="text" name="scope" value="user" required></label>
+    <label>Name: <input type="text" name="name" required></label>
+    <label>Email: <input type="email" name="email" required></label>
+    <label>Age: <input type="number" name="age"></label>
+    <button type="submit">Submit POST</button>
+  </form>
+
+  <pre id="postResponse">POST response will appear here...</pre>
+
+  <form id="getForm">
+    <h3>📥 GET /api/data</h3>
+    <label>User-id: <input type="text" name="userId" value="ifabula" required></label>
+    <label>Scope: <input type="text" name="scope" value="user" required></label>
+    <button type="submit">Submit GET</button>
+  </form>
+
+  <pre id="getResponse">GET response will appear here...</pre>
+
+  <script>
+    // POST handler
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'User-id': formData.get('userId'),
+        'Scope': formData.get('scope')
+      };
+
+      const body = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        age: formData.get('age') ? Number(formData.get('age')) : null
+      };
+
+      try {
+        const res = await fetch('/api/submit', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body)
+        });
+        const json = await res.json();
+        document.getElementById('postResponse').textContent = JSON.stringify(json, null, 2);
+      } catch (err) {
+        document.getElementById('postResponse').textContent = `Error: ${err.message}`;
+      }
+    });
+
+    // GET handler
+    document.getElementById('getForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'User-id': formData.get('userId'),
+        'Scope': formData.get('scope')
+      };
+
+      try {
+        const res = await fetch('/api/data', {
+          method: 'GET',
+          headers
+        });
+        const json = await res.json();
+        document.getElementById('getResponse').textContent = JSON.stringify(json, null, 2);
+      } catch (err) {
+        document.getElementById('getResponse').textContent = `Error: ${err.message}`;
+      }
+    });
+  </script>

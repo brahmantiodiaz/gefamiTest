@@ -1,0 +1,31 @@
+<h3>Soal 1 & 2</h3>
+<h2>Name: <span id="nameLabel">-</span></h2>
+<h2>Job: <span id="jobLabel">-</span></h2>
+<br><br>
+<button class="btn btn-primary" onclick="changeRandom()">Ubah</button>
+<button class="btn btn-primary" onclick="resetLabel()">Reset</button>
+
+<script>
+  const people = [
+    { id: 1, name: "Alice", job: "Engineer" },
+    { id: 2, name: "Bob", job: "Designer" },
+    { id: 3, name: "Charlie", job: "Writer" },
+    { id: 4, name: "Diana", job: "Doctor" }
+  ];
+  const nameLabel = document.getElementById('nameLabel');
+  const jobLabel = document.getElementById('jobLabel');
+  nameLabel.textContent = people[0].name;
+  jobLabel.textContent = people[0].job;
+
+  function changeRandom() {
+    const randomIndex = Math.floor(Math.random() * people.length);
+    const selected = people[randomIndex];
+    document.getElementById('nameLabel').textContent = selected.name;
+    document.getElementById('jobLabel').textContent = selected.job;
+  }
+
+  function resetLabel() {
+    nameLabel.textContent = people[0].name;
+    jobLabel.textContent = people[0].job;
+  }
+</script>

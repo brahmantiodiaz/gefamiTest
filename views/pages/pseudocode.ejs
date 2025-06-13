@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pseudocode</title>
+</head>
+<body>
+  <h1>Pilih Soal Pseudocode</h1>
+
+  <form method="POST" action="/pseudocode">
+    <label for="soal">Pilih Soal:</label>
+    <select name="soal" id="soal" required onchange="toggleInput(this.value)">
+      <option value="">-- Pilih --</option>
+      <option value="1">1. Deret kelipatan 5 + label</option>
+      <option value="2">2. Deret Fibonacci 20 angka</option>
+      <option value="3">3. Segitiga bintang</option>
+      <option value="4">4. Konversi angka ke huruf</option>
+    </select><br><br>
+
+    <input type="number" name="input" id="inputField" placeholder="Masukkan input" style="display:none;" />
+
+    <button type="submit">Jalankan</button>
+  </form>
+
+  <% if (result) { %>
+    <h2>Hasil:</h2>
+    <pre><%= result %></pre>
+  <% } %>
+
+  <script>
+    function toggleInput(soal) {
+      const inputField = document.getElementById('inputField');
+      if (soal === "3" || soal === "4") {
+        inputField.style.display = 'inline';
+      } else {
+        inputField.style.display = 'none';
+        inputField.value = '';
+      }
+    }
+  </script>
+</body>
+</html>
